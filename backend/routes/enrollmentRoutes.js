@@ -9,6 +9,11 @@ const {
   unenrollCourse,
 } = require("../controllers/enrollmentController");
 
+console.log("auth =", typeof auth);
+console.log("enrollCourse =", typeof enrollCourse);
+console.log("myCourses =", typeof myCourses);
+console.log("unenrollCourse =", typeof unenrollCourse);
+
 // ➤ ENROLL
 router.post("/enroll", auth, enrollCourse);
 
