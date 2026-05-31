@@ -1,0 +1,89 @@
+.register-container {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-family: "Segoe UI", sans-serif;
+
+  /* background */
+  background: linear-gradient(135deg, #1f4037, #99f2c8);
+}
+
+.register-box {
+  width: 380px;
+  padding: 35px;
+
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  color: white;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.register-title {
+  font-size: 32px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* inputs */
+.register-input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+
+  border: none;
+  border-radius: 8px;
+
+  outline: none;
+  font-size: 14px;
+}
+
+/* button */
+.register-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+
+  background: #00c6ff;
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-weight: bold;
+
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-btn:hover {
+  background: #0096c7;
+  transform: scale(1.05);
+}
+
+/* login link */
+.register-text {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.register-link {
+  color: #ffd93d;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}

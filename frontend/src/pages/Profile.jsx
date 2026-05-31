@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./Profile.css";
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -26,7 +27,7 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  // HANDLE FILE SELECT
+  // FILE CHANGE
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
@@ -35,6 +36,11 @@ function Profile() {
 
   // UPLOAD PHOTO
   const uploadPhoto = async () => {
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("profilePic", file);
 
@@ -56,36 +62,43 @@ function Profile() {
     alert("Profile photo updated!");
   };
 
-  if (!user) return <h2>Loading...</h2>;
+  if (!user) return <h2 style={{ color: "white" }}>Loading...</h2>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>My Profile</h1>
+    <div className="profile-container">
 
-      {/* PROFILE IMAGE */}
-      <img
-        src={
-          preview ||
-          user.profilePic ||
-          "https://via.placeholder.com/150"
-        }
-        alt="profile"
-        width="150"
-        height="150"
-        style={{ borderRadius: "50%" }}
-      />
+      <div className="profile-box">
 
-      <h3>Name: {user.name}</h3>
-      <h3>Email: {user.email}</h3>
+        <img
+          className="profile-img"
+          src={
+            preview ||
+            user.profilePic ||
+            "https://via.placeholder.com/150"
+          }
+          alt="profile"
+        />
 
-      {/* FILE INPUT */}
-      <input type="file" onChange={handleFileChange} />
+        <div className="profile-name">
+          {user.name}
+        </div>
 
-      <br /><br />
+        <div className="profile-email">
+          {user.email}
+        </div>
 
-      <button onClick={uploadPhoto}>
-        Upload Photo
-      </button>
+        <input
+          className="profile-input"
+          type="file"
+          onChange={handleFileChange}
+        />
+
+        <button className="profile-btn" onClick={uploadPhoto}>
+          Upload Photo
+        </button>
+
+      </div>
+
     </div>
   );
 }

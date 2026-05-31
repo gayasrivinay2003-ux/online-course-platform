@@ -20,22 +20,25 @@ app.use(express.json());
 
 app.use("/uploads", express.static("uploads"));
 
-app.get("/", (req, res) => {
-  res.send("Online Course Platform API Running");
-});
 
 const authRoutes = require("./routes/authRoutes");
 
 app.use("/api/auth", authRoutes);
 const courseRoutes = require("./routes/courseRoutes");
 
-app.use("/api/courses", courseRoutes);
+app.use("/", courseRoutes);
 const videoRoutes = require("./routes/videoRoutes");
 
 app.use("/api/videos", videoRoutes);
 const enrollmentRoutes = require("./routes/enrollmentRoutes");
 
 app.use("/api/enrollment", enrollmentRoutes);
+const adminRoutes = require("./routes/adminRoutes");
+
+app.use(
+  "/api/admin",
+  adminRoutes
+);
 
 const PORT = process.env.PORT || 5000;
 

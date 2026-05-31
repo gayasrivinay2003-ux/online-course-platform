@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import "./Courses.css";
 
 function Courses() {
   const [courses, setCourses] = useState([]);
+  const [loadingId, setLoadingId] = useState(null);
+
   const navigate = useNavigate();
 
+  // Fetch Courses
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/courses"
+        "http://localhost:5000/"
       );
 
       const data = await response.json();
@@ -25,71 +29,78 @@ function Courses() {
     fetchCourses();
   }, []);
 
-  const handleEnroll = async (courseId) => {
-    try {
-      const token = localStorage.getItem("token");
+  // Enroll Button
+  const handleEnroll = (course) => {
+    setLoadingId(course._id);
 
-      const response = await fetch(
-        "http://localhost:5000/api/enrollment/enroll",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            courseId,
-          }),
-        }
-      );
+    setTimeout(() => {
+      navigate("/payment", {
+        state: { course },
+      });
 
-      const data = await response.json();
-
-      alert(data.message);
-    } catch (error) {
-      console.log(error);
-      alert("Enrollment Failed");
-    }
+      setLoadingId(null);
+    }, 500);
   };
 
   return (
-    <div>
+    <div className="courses-page">
       <Navbar />
 
-      <h1>All Courses</h1>
+      <h1 className="page-title">
+        📚 All Courses
+      </h1>
 
-      <button
-        onClick={() => navigate("/my-courses")}
-        style={{
-          marginBottom: "20px",
-          padding: "10px",
-        }}
-      >
-        My Courses
-      </button>
-
-      {courses.map((course) => (
-        <div
-          key={course._id}
-          style={{
-            border: "1px solid black",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h3>{course.title}</h3>
-
-          <p>{course.description}</p>
-
-          <button
-            onClick={() =>
-              handleEnroll(course._id)
-            }
+      <div className="courses-grid">
+        {courses.map((course) => (
+          <div
+            className="course-card"
+            key={course._id}
           >
-            Enroll
-          </button>
-        </div>
-      ))}
+            {/* Course Image */}
+            <img
+              src={
+                course.thumbnail ||
+                "https://via.placeholder.com/400x250"
+              }
+              alt={course.title}
+              className="course-img"
+            />
+
+            <div className="course-content">
+              <h3>{course.title}</h3>
+
+              <p>{course.description}</p>
+
+              <p>
+                <strong>Category:</strong>{" "}
+                {course.category}
+              </p>
+
+              <p>
+                <strong>Instructor:</strong>{" "}
+                {course.instructor}
+              </p>
+
+              <p>
+                <strong>Price:</strong> ₹
+                {course.price}
+              </p>
+
+              <button
+                className="enroll-btn"
+                disabled={loadingId === course._id}
+                onClick={() =>
+                  handleEnroll(course)
+                }
+              >
+                {loadingId === course._id
+                  ? "Processing..."
+                  : "Enroll / Buy 💳"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

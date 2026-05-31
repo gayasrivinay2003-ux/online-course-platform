@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import "./Videos.css";
 
 function Videos() {
   const [videos, setVideos] = useState([]);
@@ -19,7 +20,6 @@ function Videos() {
       );
 
       const data = await response.json();
-
       setVideos(data);
     } catch (error) {
       console.log(error);
@@ -32,31 +32,48 @@ function Videos() {
   }, []);
 
   return (
-    <div>
-      <h1>Course Videos</h1>
+    <div className="videos-page">
 
-      {videos.map((video) => (
-        <div
-          key={video._id}
-          style={{
-            border: "1px solid black",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h3>{video.title}</h3>
+      <h1 className="page-title">🎬 Course Videos</h1>
 
-          <p>{video.description}</p>
+      <div className="videos-grid">
 
-          <a
-            href={video.videoUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Watch Video
-          </a>
-        </div>
-      ))}
+        {videos.map((video, index) => (
+          <div className="video-card" key={video._id}>
+
+            {/* Thumbnail */}
+            <img
+              src={
+                video.thumbnail ||
+                "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d"
+              }
+              alt="video"
+              className="video-thumb"
+            />
+
+            {/* Content */}
+            <div className="video-content">
+
+              <h3>{video.title}</h3>
+
+              <p>{video.description}</p>
+
+              <a
+                href={video.videoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="watch-btn"
+              >
+                ▶ Watch Video
+              </a>
+
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+
     </div>
   );
 }

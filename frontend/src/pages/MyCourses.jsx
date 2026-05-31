@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./MyCourses.css";
 
 function MyCourses() {
   const [courses, setCourses] = useState([]);
@@ -19,7 +20,6 @@ function MyCourses() {
       );
 
       const data = await response.json();
-
       setCourses(data);
     } catch (error) {
       console.log(error);
@@ -32,31 +32,45 @@ function MyCourses() {
   }, []);
 
   return (
-    <div>
-      <h1>My Courses</h1>
+    <div className="mycourses-container">
+      <h1 className="mycourses-title">
+        My Courses 🎓
+      </h1>
 
-      {courses.map((item) => (
-        <div
-          key={item._id}
-          style={{
-            border: "1px solid black",
-            margin: "10px",
-            padding: "10px",
-          }}
-        >
-          <h3>{item.courseId.title}</h3>
+      <div className="courses-row">
+        {courses.length > 0 ? (
+          courses.map((item) => (
+            <div className="course-card" key={item._id}>
 
-          <p>{item.courseId.description}</p>
+              <img
+                src={item.courseId.thumbnail}
+                alt={item.courseId.title}
+                className="course-thumbnail"
+                onError={(e) => {
+                  e.target.src =
+                    "https://via.placeholder.com/300x180?text=No+Image";
+                }}
+              />
 
-          <button
-            onClick={() =>
-              navigate(`/videos/${item.courseId._id}`)
-            }
-          >
-            View Videos
-          </button>
-        </div>
-      ))}
+              <h3>{item.courseId.title}</h3>
+
+              <p>{item.courseId.description}</p>
+
+              <button
+                className="view-btn"
+                onClick={() =>
+                  navigate(`/videos/${item.courseId._id}`)
+                }
+              >
+                View Videos
+              </button>
+
+            </div>
+          ))
+        ) : (
+          <p>No courses enrolled yet.</p>
+        )}
+      </div>
     </div>
   );
 }

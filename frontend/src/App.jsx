@@ -2,10 +2,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Home from "./pages/Home";
 import Courses from "./pages/Courses";
 import MyCourses from "./pages/MyCourses";
 import Videos from "./pages/Videos";
 import Profile from "./pages/Profile";
+import Payment from "./pages/Payment";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -14,10 +17,29 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<Login />} />
+        {/* LOGIN PAGE */}
+        <Route
+          path="/"
+          element={<Login />}
+        />
 
-        <Route path="/register" element={<Register />} />
+        {/* REGISTER PAGE */}
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
+        {/* HOME PAGE */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* COURSES PAGE */}
         <Route
           path="/courses"
           element={
@@ -27,6 +49,7 @@ function App() {
           }
         />
 
+        {/* MY COURSES PAGE */}
         <Route
           path="/my-courses"
           element={
@@ -36,6 +59,7 @@ function App() {
           }
         />
 
+        {/* VIDEO PLAYER PAGE */}
         <Route
           path="/videos/:courseId"
           element={
@@ -45,12 +69,32 @@ function App() {
           }
         />
 
-        {/* ✅ PROFILE ROUTE */}
+        {/* PROFILE PAGE */}
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* PAYMENT PAGE */}
+        <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <Payment />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ADMIN DASHBOARD */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

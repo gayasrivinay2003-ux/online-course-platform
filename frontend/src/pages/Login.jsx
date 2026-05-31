@@ -1,70 +1,65 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
+import "./Login.css";
 
 function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-
     try {
+      const res = await API.post("/auth/login", {
+        email,
+        password,
+      });
 
-      const res = await API.post(
-        "/auth/login",
-        {
-          email,
-          password,
-        }
-      );
-
-      localStorage.setItem(
-        "token",
-        res.data.token
-      );
+      // save token
+      localStorage.setItem("token", res.data.token);
 
       alert("Login Success");
 
-      navigate("/courses");
-
+      // go to home page
+      navigate("/home");
     } catch (error) {
-
-      alert("Login Failed");
+      alert(error?.response?.data?.message || "Login Failed");
     }
   };
 
   return (
-    <div>
+    <div className="login-container">
+      <div className="login-box">
+        <h2 className="login-title">Login</h2>
 
-      <h2>Login</h2>
+        <input
+          className="login-input"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <input
-        type="email"
-        placeholder="Email"
-        onChange={(e) =>
-          setEmail(e.target.value)
-        }
-      />
+        <input
+          className="login-input"
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <br /><br />
+        <button className="login-btn" onClick={handleLogin}>
+          Login
+        </button>
 
-      <input
-        type="password"
-        placeholder="Password"
-        onChange={(e) =>
-          setPassword(e.target.value)
-        }
-      />
-
-      <br /><br />
-
-      <button onClick={handleLogin}>
-        Login
-      </button>
-
+        <p className="login-text">
+          Don't have an account?{" "}
+          <Link className="login-link" to="/register">
+            Register
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
