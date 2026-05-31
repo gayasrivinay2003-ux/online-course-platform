@@ -12,7 +12,7 @@ function Profile() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "http://localhost:5000/api/auth/profile",
+        "https://online-course-platform-wvrx.onrender.com/api/auth/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ function Profile() {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      "http://localhost:5000/api/auth/upload-photo",
+      "https://online-course-platform-wvrx.onrender.com/api/auth/upload-photo",
       {
         method: "PUT",
         headers: {

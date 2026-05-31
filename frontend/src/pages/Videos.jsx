@@ -11,7 +11,7 @@ function Videos() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/videos/course/${courseId}`,
+        `https://online-course-platform-wvrx.onrender.com/api/videos/course/${courseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

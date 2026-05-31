@@ -11,7 +11,7 @@ function MyCourses() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/enrollment/my-courses",
+        "https://online-course-platform-wvrx.onrender.com/api/enrollment/my-courses",
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -14,7 +14,7 @@ function Register() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/auth/register",
+        "https://online-course-platform-wvrx.onrender.com/api/auth/register",
         {
           method: "POST",
           headers: {

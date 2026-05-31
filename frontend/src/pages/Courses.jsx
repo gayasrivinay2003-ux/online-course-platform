@@ -13,7 +13,7 @@ function Courses() {
   const fetchCourses = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/"
+        "https://online-course-platform-wvrx.onrender.com"
       );
 
       const data = await response.json();

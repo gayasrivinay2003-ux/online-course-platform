@@ -12,7 +12,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
 
-    fetch("http://localhost:5000/api/admin/dashboard")
+    fetch("https://online-course-platform-wvrx.onrender.com/api/admin/dashboard")
       .then((res) => res.json())
       .then((data) => setStats(data))
       .catch((err) => console.log(err));
