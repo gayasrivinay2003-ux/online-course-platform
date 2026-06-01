@@ -6,19 +6,28 @@ const auth = require("../middleware/auth");
 const {
   addVideo,
   getVideos,
+  getVideoById,
   getVideosByCourse,
+  updateVideo,
+  deleteVideo,
 } = require("../controllers/videoController");
 
-
-// ➤ ADD VIDEO
+// CREATE
 router.post("/", addVideo);
 
-
-// ➤ GET ALL VIDEOS
+// READ ALL
 router.get("/", getVideos);
 
-
-// ➤ GET VIDEOS BY COURSE (PROTECTED)
+// READ BY COURSE
 router.get("/course/:courseId", auth, getVideosByCourse);
+
+// READ ONE
+router.get("/:id", getVideoById);
+
+// UPDATE
+router.put("/:id", updateVideo);
+
+// DELETE
+router.delete("/:id", deleteVideo);
 
 module.exports = router;
