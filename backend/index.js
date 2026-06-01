@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173", // React/Vite local
-      "https://your-frontend-url.vercel.app", // Replace with your live frontend URL
+      "https://online-course-platform-beta.vercel.app/", // Replace with your live frontend URL
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
