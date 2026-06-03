@@ -319,6 +319,14 @@ function Home() {
                       </div>
                     </button>
 
+                    <button className="sidebar-action-btn" onClick={() => navigate("/quiz-competition")}>
+                      <span className="action-icon">⚡</span>
+                      <div className="action-label">
+                        <h4>Quiz Arena</h4>
+                        <p>Compete on timed quizzes</p>
+                      </div>
+                    </button>
+
                     {user?.role === "admin" && (
                       <button className="sidebar-action-btn admin-sidebar-btn" onClick={() => navigate("/admin")}>
                         <span className="action-icon">⚙️</span>

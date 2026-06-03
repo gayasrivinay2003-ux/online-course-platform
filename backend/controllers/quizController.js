@@ -120,9 +120,68 @@ const getUserQuizResults = async (req, res) => {
   }
 };
 
+// Get Global Leaderboard across all quizzes
+const getLeaderboard = async (req, res) => {
+  try {
+    const leaderboard = await QuizResult.aggregate([
+      // Sort attempts descending by score first
+      { $sort: { score: -1 } },
+      // Group by user and quiz to find highest score per quiz
+      {
+        $group: {
+          _id: { userId: "$userId", quizId: "$quizId" },
+          highestScore: { $first: "$score" },
+          passed: { $first: "$passed" }
+        }
+      },
+      // Group by user to calculate total score and quizzes passed
+      {
+        $group: {
+          _id: "$_id.userId",
+          totalPoints: { $sum: "$highestScore" },
+          quizzesPassed: {
+            $sum: { $cond: [{ $eq: ["$passed", true] }, 1, 0] }
+          },
+          quizzesAttempted: { $sum: 1 }
+        }
+      },
+      // Look up user details
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userInfo"
+        }
+      },
+      { $unwind: "$userInfo" },
+      // Project the fields we want to return
+      {
+        $project: {
+          _id: 1,
+          totalPoints: 1,
+          quizzesPassed: 1,
+          quizzesAttempted: 1,
+          name: "$userInfo.name",
+          email: "$userInfo.email",
+          profilePic: "$userInfo.profilePic"
+        }
+      },
+      // Sort by totalPoints descending
+      { $sort: { totalPoints: -1 } }
+    ]);
+
+    res.status(200).json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addQuiz,
   getQuizByCourse,
   submitQuiz,
-  getUserQuizResults
+  getUserQuizResults,
+  getLeaderboard
 };
+

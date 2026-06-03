@@ -90,6 +90,18 @@ function Navbar() {
           Profile
         </Link>
 
+        <Link
+          to="/quiz-competition"
+          style={{
+            color: isActive("/quiz-competition") ? "#6366f1" : "#94a3b8",
+            fontWeight: isActive("/quiz-competition") ? "600" : "500",
+            transition: "all 0.2s",
+            fontSize: "0.95rem",
+          }}
+        >
+          Quiz Arena ⚡
+        </Link>
+
         {role === "admin" && (
           <Link
             to="/admin"

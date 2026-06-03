@@ -9,6 +9,7 @@ import Videos from "./pages/Videos";
 import Profile from "./pages/Profile";
 import Payment from "./pages/Payment";
 import AdminDashboard from "./pages/AdminDashboard";
+import QuizCompetition from "./pages/QuizCompetition";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -98,6 +99,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* QUIZ COMPETITION ARENA */}
+        <Route
+          path="/quiz-competition"
+          element={
+            <ProtectedRoute>
+              <QuizCompetition />
+            </ProtectedRoute>
+          }
+        />
+
 
       </Routes>
     </BrowserRouter>

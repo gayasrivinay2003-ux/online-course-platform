@@ -5,11 +5,15 @@ const {
   addQuiz,
   getQuizByCourse,
   submitQuiz,
-  getUserQuizResults
+  getUserQuizResults,
+  getLeaderboard
 } = require("../controllers/quizController");
 
 // Create / update quiz (admin check inside controller)
 router.post("/", auth, addQuiz);
+
+// Get Global Leaderboard rankings
+router.get("/leaderboard", auth, getLeaderboard);
 
 // Get quiz by course ID
 router.get("/course/:courseId", auth, getQuizByCourse);
