@@ -31,6 +31,9 @@ const AdminDashboard = () => {
     videoUrl: "",
   });
 
+  // Video list state
+  const [allVideos, setAllVideos] = useState([]);
+
   // Quiz Builder State
   const [selectedQuizCourseId, setSelectedQuizCourseId] = useState("");
   const [quizTitle, setQuizTitle] = useState("");
@@ -54,6 +57,9 @@ const AdminDashboard = () => {
         setVideoForm((prev) => ({ ...prev, courseId: coursesRes.data[0]._id }));
         setSelectedQuizCourseId(coursesRes.data[0]._id);
       }
+
+      const videosRes = await API.get("/videos");
+      setAllVideos(videosRes.data || []);
     } catch (err) {
       console.error("Dashboard load failed", err);
     }
@@ -140,6 +146,21 @@ const AdminDashboard = () => {
       alert("Failed to upload video");
     }
   };
+
+  const handleDeleteVideo = async (videoId) => {
+    if (!window.confirm("Are you sure you want to delete this lecture video?")) {
+      return;
+    }
+
+    try {
+      await API.delete(`/videos/${videoId}`);
+      alert("Lecture video deleted successfully!");
+      loadDashboardData();
+    } catch (err) {
+      alert("Failed to delete video");
+    }
+  };
+
 
   // Quiz Builder Operations
   const handleAddQuestion = () => {
@@ -394,65 +415,107 @@ const AdminDashboard = () => {
         )}
 
         {/* Video Publisher Workspace */}
-        {activeTab === "videos" && (
-          <div className="admin-section">
-            <h3 className="admin-section-title">Publish Lecture Video</h3>
-            <form className="admin-form" onSubmit={handleAddVideo}>
-              <div className="form-group">
-                <label className="form-label">Select Target Course *</label>
-                <select
-                  className="admin-select"
-                  value={videoForm.courseId}
-                  onChange={(e) => setVideoForm({ ...videoForm, courseId: e.target.value })}
-                >
-                  {courses.map((course) => (
-                    <option key={course._id} value={course._id}>
-                      {course.title}
-                    </option>
-                  ))}
-                </select>
+        {activeTab === "videos" && (() => {
+          const courseVideos = allVideos.filter(
+            (vid) =>
+              vid.courseId &&
+              (vid.courseId._id === videoForm.courseId || vid.courseId === videoForm.courseId)
+          );
+          return (
+            <div>
+              <div className="admin-section">
+                <h3 className="admin-section-title">Publish Lecture Video</h3>
+                <form className="admin-form" onSubmit={handleAddVideo}>
+                  <div className="form-group">
+                    <label className="form-label">Select Target Course *</label>
+                    <select
+                      className="admin-select"
+                      value={videoForm.courseId}
+                      onChange={(e) => setVideoForm({ ...videoForm, courseId: e.target.value })}
+                    >
+                      {courses.map((course) => (
+                        <option key={course._id} value={course._id}>
+                          {course.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Video Title *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. Introduction to State Management"
+                      value={videoForm.title}
+                      onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Video Source Link * (YouTube watch links or generic MP4s supported)</label>
+                    <input
+                      type="url"
+                      className="form-input"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      value={videoForm.videoUrl}
+                      onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Lecture Description</label>
+                    <textarea
+                      rows="3"
+                      className="form-input"
+                      style={{ resize: "vertical", height: "auto" }}
+                      placeholder="Details of topics covered in this video..."
+                      value={videoForm.description}
+                      onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
+                    />
+                  </div>
+
+                  <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
+                    Publish Video
+                  </button>
+                </form>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Video Title *</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g. Introduction to State Management"
-                  value={videoForm.title}
-                  onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                />
+              <div className="admin-section">
+                <h3 className="admin-section-title">Current Syllabus Outline ({courseVideos.length} Videos)</h3>
+                {courseVideos.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {courseVideos.map((vid) => (
+                      <div key={vid._id} className="admin-list-item glass-panel" style={{ borderRadius: "10px" }}>
+                        <div style={{ flexGrow: 1, paddingRight: "20px" }}>
+                          <strong style={{ fontSize: "1rem", color: "var(--text-main)" }}>{vid.title}</strong>
+                          <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                            Source: <a href={vid.videoUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>{vid.videoUrl}</a>
+                          </p>
+                          {vid.description && (
+                            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                              {vid.description}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          className="delete-action-btn"
+                          onClick={() => handleDeleteVideo(vid._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>
+                    No syllabus videos published for this course yet.
+                  </p>
+                )}
               </div>
-
-              <div className="form-group">
-                <label className="form-label">Video Source Link * (YouTube watch links or generic MP4s supported)</label>
-                <input
-                  type="url"
-                  className="form-input"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  value={videoForm.videoUrl}
-                  onChange={(e) => setVideoForm({ ...videoForm, videoUrl: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Lecture Description</label>
-                <textarea
-                  rows="3"
-                  className="form-input"
-                  style={{ resize: "vertical", height: "auto" }}
-                  placeholder="Details of topics covered in this video..."
-                  value={videoForm.description}
-                  onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
-                />
-              </div>
-
-              <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
-                Publish Video
-              </button>
-            </form>
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* Quiz Creator Workspace */}
         {activeTab === "quiz" && (
