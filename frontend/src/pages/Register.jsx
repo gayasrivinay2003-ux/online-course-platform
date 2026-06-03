@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import API from "../services/api";
 import "./Register.css";
 
 function Register() {
@@ -13,31 +14,16 @@ function Register() {
     e.preventDefault();
 
     try {
-      const res = await fetch(
-        "https://online-course-platform-wvrx.onrender.com/api/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
-        }
-      );
+      const res = await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Registered successfully");
-        navigate("/");
-      } else {
-        alert(data.message);
-      }
+      alert("Registered successfully");
+      navigate("/");
     } catch (error) {
-      alert("Registration failed");
+      alert(error?.response?.data?.message || "Registration failed");
     }
   };
 

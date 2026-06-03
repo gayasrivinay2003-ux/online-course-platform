@@ -17,6 +17,12 @@ const enrollmentSchema = new mongoose.Schema(
       enum: ["enrolled", "completed"],
       default: "enrolled",
     },
+    watchedVideos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video"
+      }
+    ]
   },
   { timestamps: true }
 );

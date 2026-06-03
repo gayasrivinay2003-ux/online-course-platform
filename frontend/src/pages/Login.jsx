@@ -16,8 +16,10 @@ function Login() {
         password,
       });
 
-      // save token
+      // save token and user info
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.user?.role || "student");
+      localStorage.setItem("name", res.data.user?.name || "");
 
       alert("Login Success");
 

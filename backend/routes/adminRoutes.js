@@ -22,6 +22,9 @@ router.delete("/users/:id", deleteUser);
 // COURSES
 router.get("/courses", getCourses);
 
+const { addCourse } = require("../controllers/courseController");
+router.post("/courses", addCourse);
+
 router.delete("/courses/:id", deleteCourse);
 
 // ENROLLMENTS

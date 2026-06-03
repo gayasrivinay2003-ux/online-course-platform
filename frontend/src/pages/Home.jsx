@@ -17,12 +17,14 @@ function Home() {
         <div className="nav-right">
 
           {/* ADMIN DASHBOARD */}
-          <button
-            className="admin-btn"
-            onClick={() => navigate("/admin")}
-          >
-            Admin Dashboard
-          </button>
+          {localStorage.getItem("role") === "admin" && (
+            <button
+              className="admin-btn"
+              onClick={() => navigate("/admin")}
+            >
+              Admin Dashboard
+            </button>
+          )}
 
           {/* PROFILE */}
           <div

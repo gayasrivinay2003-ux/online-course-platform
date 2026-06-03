@@ -46,6 +46,15 @@ app.use("/api/enrollment", enrollmentRoutes);
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
 
+const quizRoutes = require("./routes/quizRoutes");
+app.use("/api/quizzes", quizRoutes);
+
+const reviewRoutes = require("./routes/reviewRoutes");
+app.use("/api/reviews", reviewRoutes);
+
+const discussionRoutes = require("./routes/discussionRoutes");
+app.use("/api/discussions", discussionRoutes);
+
 // Health Check Route
 app.get("/", (req, res) => {
   res.status(200).json({

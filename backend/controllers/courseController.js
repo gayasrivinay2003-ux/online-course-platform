@@ -1,4 +1,5 @@
 const Course = require("../models/Course");
+const Review = require("../models/Review");
 
 
 // ADD COURSE
@@ -41,9 +42,23 @@ const getCourses = async (req, res) => {
 
   try {
 
-    const courses = await Course.find();
+    const courses = await Course.find().lean();
+    const coursesWithRatings = await Promise.all(
+      courses.map(async (course) => {
+        const reviews = await Review.find({ courseId: course._id });
+        const reviewCount = reviews.length;
+        const avgRating = reviewCount > 0 
+          ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1))
+          : 0;
+        return {
+          ...course,
+          avgRating,
+          reviewCount
+        };
+      })
+    );
 
-    res.status(200).json(courses);
+    res.status(200).json(coursesWithRatings);
 
   } catch (error) {
 
@@ -61,7 +76,7 @@ const getCourseById = async (req, res) => {
 
     const course = await Course.findById(
       req.params.id
-    );
+    ).lean();
 
     if (!course) {
 
@@ -70,7 +85,17 @@ const getCourseById = async (req, res) => {
       });
     }
 
-    res.status(200).json(course);
+    const reviews = await Review.find({ courseId: course._id });
+    const reviewCount = reviews.length;
+    const avgRating = reviewCount > 0 
+      ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1))
+      : 0;
+
+    res.status(200).json({
+      ...course,
+      avgRating,
+      reviewCount
+    });
 
   } catch (error) {
 

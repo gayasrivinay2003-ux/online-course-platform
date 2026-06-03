@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+import API from "../services/api";
+import { BASE_URL } from "../config";
 import "./Profile.css";
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // GET PROFILE
   useEffect(() => {
     const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(
-        "https://online-course-platform-wvrx.onrender.com/api/auth/profile",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await res.json();
-      setUser(data);
+      try {
+        setLoading(true);
+        const res = await API.get("/auth/profile");
+        setUser(res.data);
+      } catch (err) {
+        console.error("Error fetching profile", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProfile();
@@ -30,8 +30,10 @@ function Profile() {
   // FILE CHANGE
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+    }
   };
 
   // UPLOAD PHOTO
@@ -44,61 +46,89 @@ function Profile() {
     const formData = new FormData();
     formData.append("profilePic", file);
 
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(
-      "https://online-course-platform-wvrx.onrender.com/api/auth/upload-photo",
-      {
-        method: "PUT",
+    try {
+      const res = await API.put("/auth/upload-photo", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
-        body: formData,
-      }
-    );
-
-    const data = await res.json();
-    setUser(data);
-    alert("Profile photo updated!");
+      });
+      setUser(res.data);
+      alert("Profile photo updated!");
+      setFile(null);
+      setPreview("");
+    } catch (err) {
+      console.error("Upload error", err);
+      alert("Failed to upload profile photo");
+    }
   };
 
-  if (!user) return <h2 style={{ color: "white" }}>Loading...</h2>;
+  const getProfilePic = (pic) => {
+    if (!pic) return "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
+    if (pic.startsWith("http")) return pic;
+    // Prepend BASE_URL if relative path
+    const cleanPic = pic.startsWith("/") ? pic.substring(1) : pic;
+    return `${BASE_URL}/${cleanPic}`;
+  };
 
   return (
-    <div className="profile-container">
+    <div className="profile-page">
+      <Navbar />
 
-      <div className="profile-box">
+      <div className="profile-container">
+        {loading ? (
+          <h2 style={{ color: "var(--text-muted)" }}>Loading Profile...</h2>
+        ) : user ? (
+          <div className="profile-box glass-panel">
+            <img
+              className="profile-img"
+              src={preview || getProfilePic(user.profilePic)}
+              alt="profile"
+              onError={(e) => {
+                e.target.src =
+                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
+              }}
+            />
 
-        <img
-          className="profile-img"
-          src={
-            preview ||
-            user.profilePic ||
-            "https://via.placeholder.com/150"
-          }
-          alt="profile"
-        />
+            <h2 className="profile-name">{user.name}</h2>
+            <p className="profile-email">{user.email}</p>
 
-        <div className="profile-name">
-          {user.name}
-        </div>
+            <div
+              style={{
+                display: "inline-block",
+                padding: "4px 12px",
+                borderRadius: "12px",
+                background: "rgba(99, 102, 241, 0.15)",
+                border: "1px solid rgba(99, 102, 241, 0.3)",
+                color: "var(--primary)",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                marginBottom: "24px",
+              }}
+            >
+              Role: {user.role || "student"}
+            </div>
 
-        <div className="profile-email">
-          {user.email}
-        </div>
+            <div className="form-group" style={{ marginTop: "10px" }}>
+              <label className="form-label" style={{ textAlign: "center" }}>
+                Update Profile Photo
+              </label>
+              <input
+                className="profile-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
 
-        <input
-          className="profile-input"
-          type="file"
-          onChange={handleFileChange}
-        />
-
-        <button className="profile-btn" onClick={uploadPhoto}>
-          Upload Photo
-        </button>
-
+            <button className="profile-btn btn btn-primary" onClick={uploadPhoto}>
+              Upload Photo
+            </button>
+          </div>
+        ) : (
+          <h2 style={{ color: "var(--danger)" }}>Failed to load profile.</h2>
+        )}
       </div>
-
     </div>
   );
 }
