@@ -22,6 +22,7 @@ const AdminDashboard = () => {
     price: "",
     thumbnail: "",
   });
+  const [editingCourse, setEditingCourse] = useState(null);
 
   // Video Form State
   const [videoForm, setVideoForm] = useState({
@@ -30,9 +31,20 @@ const AdminDashboard = () => {
     description: "",
     videoUrl: "",
   });
+  const [editingVideo, setEditingVideo] = useState(null);
 
   // Video list state
   const [allVideos, setAllVideos] = useState([]);
+
+  // User States
+  const [users, setUsers] = useState([]);
+  const [userForm, setUserForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "student",
+  });
+  const [editingUser, setEditingUser] = useState(null);
 
   // Quiz Builder State
   const [selectedQuizCourseId, setSelectedQuizCourseId] = useState("");
@@ -60,6 +72,9 @@ const AdminDashboard = () => {
 
       const videosRes = await API.get("/videos");
       setAllVideos(videosRes.data || []);
+
+      const usersRes = await API.get("/admin/users");
+      setUsers(usersRes.data || []);
     } catch (err) {
       console.error("Dashboard load failed", err);
     }
@@ -78,16 +93,24 @@ const AdminDashboard = () => {
     }
 
     try {
-      await API.post("/admin/courses", {
+      const courseData = {
         title: courseForm.title,
         description: courseForm.description,
         category: courseForm.category || "General",
         instructor: courseForm.instructor,
         price: Number(courseForm.price),
         thumbnail: courseForm.thumbnail,
-      });
+      };
 
-      alert("Course added successfully! 🎉");
+      if (editingCourse) {
+        await API.put(`/admin/courses/${editingCourse._id}`, courseData);
+        alert("Course updated successfully! 🎉");
+        setEditingCourse(null);
+      } else {
+        await API.post("/admin/courses", courseData);
+        alert("Course added successfully! 🎉");
+      }
+
       setCourseForm({
         title: "",
         description: "",
@@ -98,7 +121,7 @@ const AdminDashboard = () => {
       });
       loadDashboardData();
     } catch (err) {
-      alert("Failed to add course");
+      alert(editingCourse ? "Failed to update course" : "Failed to add course");
     }
   };
 
@@ -126,15 +149,22 @@ const AdminDashboard = () => {
     }
 
     try {
-      // Direct post to backend videoRoutes CREATE
-      await API.post("/videos", {
+      const videoData = {
         courseId: videoForm.courseId,
         title: videoForm.title,
         description: videoForm.description,
         videoUrl: videoForm.videoUrl,
-      });
+      };
 
-      alert("Lecture video uploaded successfully! 🎬");
+      if (editingVideo) {
+        await API.put(`/videos/${editingVideo._id}`, videoData);
+        alert("Lecture video updated successfully! 🎬");
+        setEditingVideo(null);
+      } else {
+        await API.post("/videos", videoData);
+        alert("Lecture video uploaded successfully! 🎬");
+      }
+
       setVideoForm({
         ...videoForm,
         title: "",
@@ -143,7 +173,7 @@ const AdminDashboard = () => {
       });
       loadDashboardData();
     } catch (err) {
-      alert("Failed to upload video");
+      alert(editingVideo ? "Failed to update video" : "Failed to upload video");
     }
   };
 
@@ -240,6 +270,94 @@ const AdminDashboard = () => {
     }
   };
 
+  // User CRUD Operations
+  const handleEditUserClick = (user) => {
+    setEditingUser(user);
+    setUserForm({
+      name: user.name || "",
+      email: user.email || "",
+      password: "",
+      role: user.role || "student",
+    });
+  };
+
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+    if (!userForm.name || !userForm.email || (!editingUser && !userForm.password)) {
+      alert("Please fill in name, email, and password.");
+      return;
+    }
+
+    try {
+      const userData = {
+        name: userForm.name,
+        email: userForm.email,
+        role: userForm.role,
+      };
+      if (userForm.password) {
+        userData.password = userForm.password;
+      }
+
+      if (editingUser) {
+        await API.put(`/admin/users/${editingUser._id}`, userData);
+        alert("User updated successfully! 👤");
+        setEditingUser(null);
+      } else {
+        await API.post("/admin/users", userData);
+        alert("User created successfully! 👤");
+      }
+
+      setUserForm({
+        name: "",
+        email: "",
+        password: "",
+        role: "student",
+      });
+      loadDashboardData();
+    } catch (err) {
+      const errMsg = err.response?.data?.message || "";
+      alert(editingUser ? `Failed to update user: ${errMsg}` : `Failed to create user: ${errMsg}`);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
+    try {
+      await API.delete(`/admin/users/${userId}`);
+      alert("User deleted successfully!");
+      loadDashboardData();
+    } catch (err) {
+      alert("Failed to delete user");
+    }
+  };
+
+  // Course Edit Handlers
+  const handleEditCourseClick = (course) => {
+    setEditingCourse(course);
+    setCourseForm({
+      title: course.title || "",
+      description: course.description || "",
+      category: course.category || "",
+      instructor: course.instructor || "",
+      price: course.price || "",
+      thumbnail: course.thumbnail || "",
+    });
+  };
+
+  // Video Edit Handlers
+  const handleEditVideoClick = (video) => {
+    setEditingVideo(video);
+    setVideoForm({
+      courseId: video.courseId?._id || video.courseId || "",
+      title: video.title || "",
+      description: video.description || "",
+      videoUrl: video.videoUrl || "",
+    });
+  };
+
   return (
     <div className="admin-page">
       <Navbar />
@@ -275,6 +393,12 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab("quiz")}
           >
             Quiz Creator
+          </button>
+          <button
+            className={`admin-tab ${activeTab === "users" ? "active" : ""}`}
+            onClick={() => setActiveTab("users")}
+          >
+            User Manager
           </button>
         </div>
 
@@ -313,7 +437,9 @@ const AdminDashboard = () => {
         {activeTab === "courses" && (
           <div>
             <div className="admin-section">
-              <h3 className="admin-section-title">Create a New Course</h3>
+              <h3 className="admin-section-title">
+                {editingCourse ? `Edit Course: ${editingCourse.title}` : "Create a New Course"}
+              </h3>
               <form className="admin-form" onSubmit={handleAddCourse}>
                 <div className="admin-form-row">
                   <div className="form-group">
@@ -384,9 +510,31 @@ const AdminDashboard = () => {
                   />
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
-                  Publish Course
-                </button>
+                <div>
+                  <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
+                    {editingCourse ? "Update Course" : "Publish Course"}
+                  </button>
+                  {editingCourse && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ marginLeft: "10px", width: "150px" }}
+                      onClick={() => {
+                        setEditingCourse(null);
+                        setCourseForm({
+                          title: "",
+                          description: "",
+                          category: "",
+                          instructor: "",
+                          price: "",
+                          thumbnail: "",
+                        });
+                      }}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -401,12 +549,21 @@ const AdminDashboard = () => {
                         Instructor: {course.instructor} • Category: {course.category}
                       </span>
                     </div>
-                    <button
-                      className="delete-action-btn"
-                      onClick={() => handleDeleteCourse(course._id)}
-                    >
-                      Delete
-                    </button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                        onClick={() => handleEditCourseClick(course)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="delete-action-btn"
+                        onClick={() => handleDeleteCourse(course._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -424,7 +581,9 @@ const AdminDashboard = () => {
           return (
             <div>
               <div className="admin-section">
-                <h3 className="admin-section-title">Publish Lecture Video</h3>
+                <h3 className="admin-section-title">
+                  {editingVideo ? `Edit Lecture Video: ${editingVideo.title}` : "Publish Lecture Video"}
+                </h3>
                 <form className="admin-form" onSubmit={handleAddVideo}>
                   <div className="form-group">
                     <label className="form-label">Select Target Course *</label>
@@ -475,9 +634,29 @@ const AdminDashboard = () => {
                     />
                   </div>
 
-                  <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
-                    Publish Video
-                  </button>
+                  <div>
+                    <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
+                      {editingVideo ? "Update Video" : "Publish Video"}
+                    </button>
+                    {editingVideo && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        style={{ marginLeft: "10px", width: "150px" }}
+                        onClick={() => {
+                          setEditingVideo(null);
+                          setVideoForm({
+                            courseId: courses.length > 0 ? courses[0]._id : "",
+                            title: "",
+                            description: "",
+                            videoUrl: "",
+                          });
+                        }}
+                      >
+                        Cancel Edit
+                      </button>
+                    )}
+                  </div>
                 </form>
               </div>
 
@@ -498,12 +677,21 @@ const AdminDashboard = () => {
                             </p>
                           )}
                         </div>
-                        <button
-                          className="delete-action-btn"
-                          onClick={() => handleDeleteVideo(vid._id)}
-                        >
-                          Delete
-                        </button>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <button
+                            className="btn btn-secondary"
+                            style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                            onClick={() => handleEditVideoClick(vid)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-action-btn"
+                            onClick={() => handleDeleteVideo(vid._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -650,6 +838,135 @@ const AdminDashboard = () => {
                 Save & Activate Quiz ➔
               </button>
             </form>
+          </div>
+        )}
+
+        {/* User Manager Workspace */}
+        {activeTab === "users" && (
+          <div>
+            <div className="admin-section">
+              <h3 className="admin-section-title">
+                {editingUser ? `Edit User: ${editingUser.name}` : "Create a New User"}
+              </h3>
+              <form className="admin-form" onSubmit={handleUserSubmit}>
+                <div className="admin-form-row">
+                  <div className="form-group">
+                    <label className="form-label">Full Name *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="e.g. John Doe"
+                      value={userForm.name}
+                      onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email Address *</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      placeholder="e.g. john@example.com"
+                      value={userForm.email}
+                      onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="form-group">
+                    <label className="form-label">
+                      Password {editingUser ? "(Leave blank to keep current)" : "*"}
+                    </label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder={editingUser ? "••••••••" : "Password"}
+                      value={userForm.password}
+                      onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">System Role *</label>
+                    <select
+                      className="admin-select"
+                      value={userForm.role}
+                      onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                    >
+                      <option value="student">Student</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <button type="submit" className="btn btn-primary" style={{ width: "200px" }}>
+                    {editingUser ? "Update User" : "Create User"}
+                  </button>
+                  {editingUser && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ marginLeft: "10px", width: "150px" }}
+                      onClick={() => {
+                        setEditingUser(null);
+                        setUserForm({
+                          name: "",
+                          email: "",
+                          password: "",
+                          role: "student",
+                        });
+                      }}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            <div className="admin-section">
+              <h3 className="admin-section-title">Registered Users ({users.length} users)</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                {users.map((user) => (
+                  <div key={user._id} className="admin-list-item glass-panel" style={{ marginBottom: "10px" }}>
+                    <div>
+                      <strong style={{ fontSize: "1rem" }}>{user.name}</strong>
+                      <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginLeft: "12px" }}>
+                        Email: {user.email} • Role: 
+                        <span 
+                          style={{ 
+                            marginLeft: "6px",
+                            padding: "2px 8px", 
+                            borderRadius: "4px", 
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            backgroundColor: user.role === "admin" ? "rgba(6, 182, 212, 0.2)" : "rgba(255, 255, 255, 0.05)",
+                            color: user.role === "admin" ? "var(--accent)" : "var(--text-muted)"
+                          }}
+                        >
+                          {user.role}
+                        </span>
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+                        onClick={() => handleEditUserClick(user)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="delete-action-btn"
+                        onClick={() => handleDeleteUser(user._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

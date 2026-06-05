@@ -5,6 +5,8 @@ const router = express.Router();
 const {
   getDashboard,
   getUsers,
+  createUser,
+  updateUser,
   deleteUser,
   getCourses,
   deleteCourse,
@@ -16,14 +18,16 @@ router.get("/dashboard", getDashboard);
 
 // USERS
 router.get("/users", getUsers);
-
+router.post("/users", createUser);
+router.put("/users/:id", updateUser);
 router.delete("/users/:id", deleteUser);
 
 // COURSES
 router.get("/courses", getCourses);
 
-const { addCourse } = require("../controllers/courseController");
+const { addCourse, updateCourse } = require("../controllers/courseController");
 router.post("/courses", addCourse);
+router.put("/courses/:id", updateCourse);
 
 router.delete("/courses/:id", deleteCourse);
 

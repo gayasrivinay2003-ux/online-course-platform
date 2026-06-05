@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Course = require("../models/Course");
 const Video = require("../models/Video");
 const Enrollment = require("../models/Enrollment");
+const bcrypt = require("bcryptjs");
 
 // DASHBOARD
 const getDashboard = async (req, res) => {
@@ -30,6 +31,72 @@ const getUsers = async (req, res) => {
     const users = await User.find();
 
     res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+// CREATE USER
+const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+      return res.status(400).json({
+        message: "User already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "student"
+    });
+
+    res.status(201).json({
+      message: "User Created Successfully",
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+// UPDATE USER
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.role = role || user.role;
+
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      message: "User Updated Successfully",
+      user: updatedUser
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message
@@ -98,6 +165,8 @@ const getEnrollments = async (req, res) => {
 module.exports = {
   getDashboard,
   getUsers,
+  createUser,
+  updateUser,
   deleteUser,
   getCourses,
   deleteCourse,
